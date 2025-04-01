@@ -11,10 +11,10 @@ return new class extends Migration
 
     public function up(): void
     {
-        Schema::create('marcas', function (Blueprint $table) {
-            $table->id('id_marca');
-            $table->string('nome', 50);
-            $table->string('pais_origem', 50)->nullable();
+        Schema::create('brands', function (Blueprint $table) {
+            $table->id('brand_id');
+            $table->string('name', 50);
+            $table->string('country_origin', 50)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -22,6 +22,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('marcas');
+        Schema::dropIfExists('brands');
     }
 };
