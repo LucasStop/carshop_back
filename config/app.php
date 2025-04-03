@@ -154,5 +154,6 @@ return [
         // App\Providers\RouteServiceProvider::class,
 
         //DOMAINS
+        App\Domain\Brands\Providers\RouteServiceProvider::class,
     ])->toArray(),
 ];

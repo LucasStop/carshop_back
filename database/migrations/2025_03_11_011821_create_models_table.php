@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('models', function (Blueprint $table) {
-            $table->id('model_id');
+            $table->id();
             $table->unsignedBigInteger('brand_id');
             $table->string('name', 50);
             $table->integer('year_model')->nullable();
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->foreign('brand_id')
-                ->references('brand_id')->on('brands')
+                ->references('id')->on('brands')
                 ->onDelete('cascade');
         });
     }

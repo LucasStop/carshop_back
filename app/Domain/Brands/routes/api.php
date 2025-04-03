@@ -8,7 +8,7 @@ Route::controller(BrandsController::class)
     ->group(function () {
         Route::get('/', 'index');
         Route::post('/', 'store');
-        Route::get('/{brand_id}', 'show');
-        Route::put('/{brand_id}', 'update');
-        Route::delete('/{brand_id}', 'delete');
+        Route::get('/{id}', 'show');
+        Route::put('/{id}', 'update');
+        Route::delete('/{id}', 'delete');
     });

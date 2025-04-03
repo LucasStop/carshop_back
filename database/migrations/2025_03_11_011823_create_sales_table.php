@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('sales', function (Blueprint $table) {
-            $table->id('sale_id');
+            $table->id();
             $table->unsignedBigInteger('car_id');
             $table->unsignedBigInteger('customer_id');
             $table->unsignedBigInteger('employee_id');
@@ -23,13 +23,13 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->foreign('car_id')
-                ->references('car_id')->on('cars')
+                ->references('id')->on('cars')
                 ->onDelete('cascade');
             $table->foreign('customer_id')
-                ->references('customer_id')->on('customers')
+                ->references('id')->on('customers')
                 ->onDelete('cascade');
             $table->foreign('employee_id')
-                ->references('employee_id')->on('employees')
+                ->references('id')->on('employees')
                 ->onDelete('cascade');
         });
     }
