@@ -13,4 +13,5 @@ Route::controller(EmployeesController::class)
         Route::delete('/{id}', 'delete');
         Route::get('/cpf/{cpf}', 'findByCpf');
         Route::get('/position/{position}', 'findByPosition');
+        Route::get('/top-sellers', 'topSellers');
     });

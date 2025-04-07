@@ -2,8 +2,10 @@
 
 namespace App\Domain\Employees\Entities;
 
+use App\Domain\Sales\Entities\Sales;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employees extends Model
 {
@@ -42,4 +44,12 @@ class Employees extends Model
         'hire_date' => 'date',
         'salary' => 'decimal:2',
     ];
+
+    /**
+     * Get the sales for the employee.
+     */
+    public function sales(): HasMany
+    {
+        return $this->hasMany(Sales::class, 'employee_id');
+    }
 }

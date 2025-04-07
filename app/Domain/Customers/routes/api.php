@@ -12,4 +12,5 @@ Route::controller(CustomersController::class)
         Route::put('/{id}', 'update');
         Route::delete('/{id}', 'delete');
         Route::get('/cpf/{cpf}', 'findByCpf');
+        Route::get('/top-customers', 'topCustomers');
     });

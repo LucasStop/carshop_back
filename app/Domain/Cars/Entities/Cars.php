@@ -3,9 +3,11 @@
 namespace App\Domain\Cars\Entities;
 
 use App\Domain\Models\Entities\Models;
+use App\Domain\Sales\Entities\Sales;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Cars extends Model
 {
@@ -43,5 +45,13 @@ class Cars extends Model
     public function model(): BelongsTo
     {
         return $this->belongsTo(Models::class, 'model_id');
+    }
+
+    /**
+     * Get the sales for the car.
+     */
+    public function sales(): HasMany
+    {
+        return $this->hasMany(Sales::class, 'car_id');
     }
 }

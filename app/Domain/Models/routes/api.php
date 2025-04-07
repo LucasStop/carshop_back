@@ -12,4 +12,10 @@ Route::controller(ModelsController::class)
         Route::put('/{id}', 'update');
         Route::delete('/{id}', 'delete');
         Route::get('/brand/{brandId}', 'byBrand');
+        
+        // Novas rotas para gerenciamento de estoque
+        Route::put('/{id}/quantity', 'updateQuantity');
+        Route::put('/{id}/increment', 'incrementQuantity');
+        Route::put('/{id}/decrement', 'decrementQuantity');
+        Route::get('/low-stock', 'lowStock');
     });

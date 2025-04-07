@@ -4,6 +4,8 @@ namespace App\Domain\Employees\Services;
 
 use App\Domain\Employees\Entities\Employees;
 use Illuminate\Database\Eloquent\Collection;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class EmployeesService
 {
@@ -24,17 +26,44 @@ class EmployeesService
 
     public function create(array $data): Employees
     {
-        return $this->entity->create($data);
+        try {
+            return $this->entity->create($data);
+        } catch (Exception $e) {
+            Log::error('Erro ao criar funcionário: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function update($id, array $data): bool
     {
-        return $this->entity->find($id)->update($data);
+        try {
+            $employee = $this->entity->find($id);
+            
+            if (!$employee) {
+                throw new Exception("Funcionário com ID {$id} não encontrado");
+            }
+            
+            return $employee->update($data);
+        } catch (Exception $e) {
+            Log::error('Erro ao atualizar funcionário: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function delete($id): bool
     {
-        return $this->entity->find($id)->delete();
+        try {
+            $employee = $this->entity->find($id);
+            
+            if (!$employee) {
+                throw new Exception("Funcionário com ID {$id} não encontrado");
+            }
+            
+            return $employee->delete();
+        } catch (Exception $e) {
+            Log::error('Erro ao excluir funcionário: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function findByCpf($cpf): ?Employees
@@ -45,5 +74,25 @@ class EmployeesService
     public function findByPosition($position): Collection
     {
         return $this->entity->where('position', $position)->get();
+    }
+    
+    /**
+     * Busca os top vendedores baseado na quantidade de vendas
+     * 
+     * @param int $limit
+     * @return Collection
+     */
+    public function findTopSellers(int $limit = 5): Collection
+    {
+        try {
+            return $this->entity
+                ->withCount('sales')
+                ->orderBy('sales_count', 'desc')
+                ->limit($limit)
+                ->get();
+        } catch (Exception $e) {
+            Log::error('Erro ao buscar top vendedores: ' . $e->getMessage());
+            throw $e;
+        }
     }
 }

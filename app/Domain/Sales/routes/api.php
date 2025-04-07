@@ -14,4 +14,5 @@ Route::controller(SalesController::class)
         Route::get('/customer/{customerId}', 'byCustomer');
         Route::get('/employee/{employeeId}', 'byEmployee');
         Route::get('/car/{carId}', 'byCar');
+        Route::post('/summary', 'summary');
     });

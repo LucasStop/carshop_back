@@ -13,4 +13,5 @@ Route::controller(CarsController::class)
         Route::delete('/{id}', 'delete');
         Route::get('/model/{modelId}', 'byModel');
         Route::get('/status/{status}', 'byStatus');
+        Route::get('/price-range', 'byPriceRange');
     });

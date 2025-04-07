@@ -4,6 +4,8 @@ namespace App\Domain\Brands\Services;
 
 use App\Domain\Brands\Entities\Brands;
 use Illuminate\Database\Eloquent\Collection;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class BrandsService
 {
@@ -24,21 +26,68 @@ class BrandsService
 
     public function create(array $data): Brands
     {
-        return $this->entity->create($data);
+        try {
+            return $this->entity->create($data);
+        } catch (Exception $e) {
+            Log::error('Erro ao criar marca: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function update($id, array $data): bool
     {
-        return $this->entity->find($id)->update($data);
+        try {
+            $brand = $this->entity->find($id);
+            
+            if (!$brand) {
+                throw new Exception("Marca com ID {$id} não encontrada");
+            }
+            
+            return $brand->update($data);
+        } catch (Exception $e) {
+            Log::error('Erro ao atualizar marca: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function delete($id): bool
     {
-        return $this->entity->find($id)->delete();
+        try {
+            $brand = $this->entity->find($id);
+            
+            if (!$brand) {
+                throw new Exception("Marca com ID {$id} não encontrada");
+            }
+            
+            // Verificar se possui modelos antes de excluir
+            if ($brand->models()->count() > 0) {
+                throw new Exception("Não é possível excluir uma marca que possui modelos associados");
+            }
+            
+            return $brand->delete();
+        } catch (Exception $e) {
+            Log::error('Erro ao excluir marca: ' . $e->getMessage());
+            throw $e;
+        }
     }
-
-    // public function findByCnpj($cnpj): bool
-    // {
-    //     return $this->entity->where('cnpj', $cnpj)->exists();
-    // }
+    
+    /**
+     * Busca as marcas mais populares baseado no número de modelos
+     * 
+     * @param int $limit
+     * @return Collection
+     */
+    public function findPopularBrands(int $limit = 5): Collection
+    {
+        try {
+            return $this->entity
+                ->withCount('models')
+                ->orderBy('models_count', 'desc')
+                ->limit($limit)
+                ->get();
+        } catch (Exception $e) {
+            Log::error('Erro ao buscar marcas populares: ' . $e->getMessage());
+            throw $e;
+        }
+    }
 }

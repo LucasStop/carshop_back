@@ -3,9 +3,11 @@
 namespace App\Domain\Models\Entities;
 
 use App\Domain\Brands\Entities\Brands;
+use App\Domain\Cars\Entities\Cars;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Models extends Model
 {
@@ -23,6 +25,7 @@ class Models extends Model
         'engine',
         'power',
         'base_price',
+        'quantity'
     ];
 
     /**
@@ -34,6 +37,7 @@ class Models extends Model
         'year_model' => 'integer',
         'power' => 'integer',
         'base_price' => 'decimal:2',
+        'quantity' => 'integer',
     ];
 
     /**
@@ -42,5 +46,13 @@ class Models extends Model
     public function brand(): BelongsTo
     {
         return $this->belongsTo(Brands::class, 'brand_id');
+    }
+
+    /**
+     * Get the cars for the model.
+     */
+    public function cars(): HasMany
+    {
+        return $this->hasMany(Cars::class, 'model_id');
     }
 }

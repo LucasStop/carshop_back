@@ -2,8 +2,10 @@
 
 namespace App\Domain\Customers\Entities;
 
+use App\Domain\Sales\Entities\Sales;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customers extends Model
 {
@@ -37,4 +39,12 @@ class Customers extends Model
     protected $casts = [
         'birth_date' => 'date',
     ];
+
+    /**
+     * Get the sales for the customer.
+     */
+    public function sales(): HasMany
+    {
+        return $this->hasMany(Sales::class, 'customer_id');
+    }
 }
