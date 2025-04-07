@@ -155,5 +155,10 @@ return [
 
         //DOMAINS
         App\Domain\Brands\Providers\RouteServiceProvider::class,
+        App\Domain\Cars\Providers\RouteServiceProvider::class,
+        App\Domain\Customers\Providers\RouteServiceProvider::class,
+        App\Domain\Employees\Providers\RouteServiceProvider::class,
+        App\Domain\Models\Providers\RouteServiceProvider::class,
+        App\Domain\Sales\Providers\RouteServiceProvider::class,
     ])->toArray(),
 ];
