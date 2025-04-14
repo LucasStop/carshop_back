@@ -3,12 +3,12 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    use SoftDeletes;
+
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('rg', 20)->unique()->nullable();
             $table->date('birth_date')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
