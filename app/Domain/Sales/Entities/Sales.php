@@ -3,8 +3,7 @@
 namespace App\Domain\Sales\Entities;
 
 use App\Domain\Cars\Entities\Cars;
-use App\Domain\Customers\Entities\Customers;
-use App\Domain\Employees\Entities\Employees;
+use App\Domain\Users\Entities\Users;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,8 +19,8 @@ class Sales extends Model
      */
     protected $fillable = [
         'car_id',
-        'customer_id',
-        'employee_id',
+        'customer_user_id',
+        'employee_user_id',
         'sale_date',
         'final_price',
         'notes',
@@ -50,7 +49,7 @@ class Sales extends Model
      */
     public function customer(): BelongsTo
     {
-        return $this->belongsTo(Customers::class, 'customer_id');
+        return $this->belongsTo(Users::class, 'customer_user_id');
     }
 
     /**
@@ -58,6 +57,6 @@ class Sales extends Model
      */
     public function employee(): BelongsTo
     {
-        return $this->belongsTo(Employees::class, 'employee_id');
+        return $this->belongsTo(Users::class, 'employee_user_id');
     }
 }

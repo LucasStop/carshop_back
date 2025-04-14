@@ -110,14 +110,14 @@ class SalesService
     public function findByCustomer($customerId): Collection
     {
         return $this->entity->with(['car', 'car.model', 'employee'])
-            ->where('customer_id', $customerId)
+            ->where('customer_user_id', $customerId)
             ->get();
     }
 
     public function findByEmployee($employeeId): Collection
     {
         return $this->entity->with(['car', 'car.model', 'customer'])
-            ->where('employee_id', $employeeId)
+            ->where('employee_user_id', $employeeId)
             ->get();
     }
 
