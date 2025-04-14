@@ -81,7 +81,7 @@ class UsersService
             
             // Se houver dados de endereço, atualizar ou criar o endereço
             if ($addressData && is_array($addressData)) {
-                $address = $this->addressesService->findByUserId($id);
+                $address = $this->addressesService->findByUser($id);
                 
                 if ($address) {
                     // Se já existe um endereço, atualize-o

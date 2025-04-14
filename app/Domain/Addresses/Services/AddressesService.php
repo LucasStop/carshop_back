@@ -72,7 +72,7 @@ class AddressesService
      * @param int $userId
      * @return Addresses|null
      */
-    public function findByUserId(int $userId): ?Addresses
+    public function findByUser(int $userId): ?Addresses
     {
         return $this->entity->where('user_id', $userId)->first();
     }
