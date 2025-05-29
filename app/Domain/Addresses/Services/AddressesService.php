@@ -24,29 +24,40 @@ class AddressesService
         return $this->entity->find($id);
     }
 
+    /**
+     * Criar um novo endereço.
+     *
+     * @param array $data
+     * @return Addresses
+     * @throws Exception
+     */
     public function create(array $data): Addresses
     {
         try {
-            return $this->entity->create($data);
+            return Addresses::create($data);
         } catch (Exception $e) {
             Log::error('Erro ao criar endereço: ' . $e->getMessage());
-            throw $e;
+            throw new Exception('Erro ao criar endereço: ' . $e->getMessage());
         }
     }
 
-    public function update($id, array $data): bool
+    /**
+     * Atualizar um endereço existente.
+     *
+     * @param int $id
+     * @param array $data
+     * @return Addresses
+     * @throws Exception
+     */
+    public function update(int $id, array $data): Addresses
     {
         try {
-            $address = $this->entity->find($id);
-            
-            if (!$address) {
-                throw new Exception("Endereço com ID {$id} não encontrado");
-            }
-            
-            return $address->update($data);
+            $address = Addresses::findOrFail($id);
+            $address->update($data);
+            return $address;
         } catch (Exception $e) {
             Log::error('Erro ao atualizar endereço: ' . $e->getMessage());
-            throw $e;
+            throw new Exception('Erro ao atualizar endereço: ' . $e->getMessage());
         }
     }
 
@@ -67,13 +78,13 @@ class AddressesService
     }
 
     /**
-     * Busca endereço pelo ID do usuário
-     * 
+     * Encontrar endereço por ID de usuário.
+     *
      * @param int $userId
      * @return Addresses|null
      */
-    public function findByUser(int $userId): ?Addresses
+    public function findByUserId(int $userId): ?Addresses
     {
-        return $this->entity->where('user_id', $userId)->first();
+        return Addresses::where('user_id', $userId)->first();
     }
 }
