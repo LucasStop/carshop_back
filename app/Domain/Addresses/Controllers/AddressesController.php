@@ -19,15 +19,26 @@ class AddressesController extends Controller
         private AddressesService $service
     ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $addresses = $this->service->all();
-            
-            // Carrega os relacionamentos
-            $addresses->load(['user']);
-            
+            $params = $request->validate([
+                'page' => 'sometimes|integer|min:1',
+                'per_page' => 'sometimes|integer|min:1|max:100',
+                'search' => 'sometimes|string|max:255',
+                'user_id' => 'sometimes|integer|exists:users,id',
+                'city' => 'sometimes|string|max:50',
+                'state' => 'sometimes|string|max:2'
+            ]);
+
+            $addresses = $this->service->all($params);
+
             return response()->json($addresses, Response::HTTP_OK);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Erro de validação',
+                'errors' => $e->validator->errors()
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $e) {
             Log::error('Erro ao buscar endereços: ' . $e->getMessage());
             return response()->json([
@@ -53,10 +64,10 @@ class AddressesController extends Controller
 
             // Criar o endereço
             $address = $this->service->create($validated);
-            
+
             // Carrega os relacionamentos
             $address->load(['user']);
-            
+
             DB::commit();
             return response()->json($address, Response::HTTP_CREATED);
         } catch (ValidationException $e) {
@@ -134,7 +145,7 @@ class AddressesController extends Controller
 
             $updatedAddress = $this->service->find($id);
             $updatedAddress->load(['user']);
-            
+
             DB::commit();
             return response()->json($updatedAddress, Response::HTTP_OK);
         } catch (ValidationException $e) {
@@ -194,10 +205,10 @@ class AddressesController extends Controller
     {
         try {
             $addresses = $this->service->findByUser($userId);
-            
+
             // Carrega os relacionamentos
             $addresses->load(['user']);
-            
+
             return response()->json($addresses, Response::HTTP_OK);
         } catch (Exception $e) {
             Log::error('Erro ao buscar endereços por usuário: ' . $e->getMessage());

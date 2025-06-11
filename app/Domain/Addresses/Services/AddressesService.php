@@ -11,12 +11,69 @@ class AddressesService
 {
     public function __construct(
         private Addresses $entity
-    ) {
-    }
+    ) {}
 
-    public function all(): Collection
+    public function all(array $params = []): array
     {
-        return $this->entity->all();
+        $query = $this->entity->with(['user']);
+
+        // Aplicar filtro de busca por endereço, cidade ou nome do usuário
+        if (!empty($params['search'])) {
+            $search = $params['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('address', 'LIKE', "%{$search}%")
+                    ->orWhere('city', 'LIKE', "%{$search}%")
+                    ->orWhere('zip_code', 'LIKE', "%{$search}%")
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'LIKE', "%{$search}%");
+                    });
+            });
+        }
+
+        // Aplicar filtro por usuário específico
+        if (!empty($params['user_id'])) {
+            $query->where('user_id', $params['user_id']);
+        }
+
+        // Aplicar filtro por cidade
+        if (!empty($params['city'])) {
+            $query->where('city', 'LIKE', "%{$params['city']}%");
+        }
+
+        // Aplicar filtro por estado
+        if (!empty($params['state'])) {
+            $query->where('state', $params['state']);
+        }
+
+        // Se não houver parâmetros de paginação, retornar todos os resultados
+        if (empty($params['page']) && empty($params['per_page'])) {
+            return [
+                'data' => $query->get(),
+                'pagination' => null
+            ];
+        }
+
+        // Configurar paginação
+        $perPage = $params['per_page'] ?? 15;
+        $page = $params['page'] ?? 1;
+
+        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return [
+            'data' => $paginated->items(),
+            'current_page' => $paginated->currentPage(),
+            'last_page' => $paginated->lastPage(),
+            'per_page' => $paginated->perPage(),
+            'total' => $paginated->total(),
+            'from' => $paginated->firstItem(),
+            'to' => $paginated->lastItem(),
+            'links' => [
+                'first' => $paginated->url(1),
+                'last' => $paginated->url($paginated->lastPage()),
+                'prev' => $paginated->previousPageUrl(),
+                'next' => $paginated->nextPageUrl(),
+            ]
+        ];
     }
 
     public function find($id): ?Addresses
@@ -65,11 +122,11 @@ class AddressesService
     {
         try {
             $address = $this->entity->find($id);
-            
+
             if (!$address) {
                 throw new Exception("Endereço com ID {$id} não encontrado");
             }
-            
+
             return $address->delete();
         } catch (Exception $e) {
             Log::error('Erro ao excluir endereço: ' . $e->getMessage());
@@ -77,14 +134,8 @@ class AddressesService
         }
     }
 
-    /**
-     * Encontrar endereço por ID de usuário.
-     *
-     * @param int $userId
-     * @return Addresses|null
-     */
-    public function findByUserId(int $userId): ?Addresses
+    public function findByUser(int $userId): Collection
     {
-        return Addresses::where('user_id', $userId)->first();
+        return $this->entity->with(['user'])->where('user_id', $userId)->get();
     }
 }
