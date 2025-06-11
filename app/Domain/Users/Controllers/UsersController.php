@@ -18,11 +18,24 @@ class UsersController extends Controller
         private UsersService $service
     ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $users = $this->service->all();
+            $params = $request->validate([
+                'page' => 'sometimes|integer|min:1',
+                'per_page' => 'sometimes|integer|min:1|max:100',
+                'search' => 'sometimes|string|max:255',
+                'role' => 'sometimes|string|max:255',
+                'status' => 'sometimes|string|in:active,inactive'
+            ]);
+
+            $users = $this->service->all($params);
             return response()->json($users, Response::HTTP_OK);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Erro de validação',
+                'errors' => $e->validator->errors()
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $e) {
             Log::error('Erro ao buscar usuários: ' . $e->getMessage());
             return response()->json([
@@ -55,10 +68,10 @@ class UsersController extends Controller
             ]);
 
             $user = $this->service->create($validated);
-            
+
             // Carrega os relacionamentos
             $user->load(['role', 'address']);
-            
+
             return response()->json($user, Response::HTTP_CREATED);
         } catch (ValidationException $e) {
             return response()->json([
@@ -84,13 +97,13 @@ class UsersController extends Controller
     {
         try {
             $user = $this->service->find($id);
-            
+
             if (!$user) {
                 return response()->json([
                     'message' => 'Usuário não encontrado'
                 ], Response::HTTP_NOT_FOUND);
             }
-            
+
             return response()->json($user, Response::HTTP_OK);
         } catch (Exception $e) {
             Log::error('Erro ao buscar usuário: ' . $e->getMessage());
@@ -105,7 +118,7 @@ class UsersController extends Controller
     {
         try {
             $user = $this->service->find($id);
-            
+
             if (!$user) {
                 return response()->json([
                     'message' => 'Usuário não encontrado'
@@ -159,7 +172,7 @@ class UsersController extends Controller
     {
         try {
             $user = $this->service->find($id);
-            
+
             if (!$user) {
                 return response()->json([
                     'message' => 'Usuário não encontrado'
@@ -167,7 +180,7 @@ class UsersController extends Controller
             }
 
             $this->service->delete($id);
-            
+
             return response()->json([
                 'message' => 'Usuário excluído com sucesso'
             ], Response::HTTP_OK);
@@ -187,7 +200,7 @@ class UsersController extends Controller
     {
         try {
             $users = $this->service->findByRole($roleId);
-            
+
             return response()->json($users, Response::HTTP_OK);
         } catch (Exception $e) {
             Log::error('Erro ao buscar usuários por função: ' . $e->getMessage());
