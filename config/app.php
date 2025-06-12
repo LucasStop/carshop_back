@@ -160,5 +160,6 @@ return [
         App\Domain\Sales\Providers\RouteServiceProvider::class,
         App\Domain\Users\Providers\RouteServiceProvider::class,
         App\Domain\Addresses\Providers\RouteServiceProvider::class,
+        App\Domain\Roles\Providers\RouteServiceProvider::class,
     ])->toArray(),
 ];
