@@ -148,19 +148,28 @@ class UsersService
             Log::error('Erro ao atualizar usuário: ' . $e->getMessage());
             throw $e;
         }
-    }
-
-    public function delete($id): bool
+    }    public function delete($id): bool
     {
+        DB::beginTransaction();
         try {
-            $user = $this->entity->find($id);
+            $user = $this->entity->with('address')->find($id);
 
             if (!$user) {
                 throw new Exception("Usuário com ID {$id} não encontrado");
             }
 
-            return $user->delete();
+            // Excluir o endereço vinculado, se existir
+            if ($user->address) {
+                $this->addressesService->delete($user->address->id);
+            }
+
+            // Excluir o usuário
+            $result = $user->delete();
+
+            DB::commit();
+            return $result;
         } catch (Exception $e) {
+            DB::rollBack();
             Log::error('Erro ao excluir usuário: ' . $e->getMessage());
             throw $e;
         }
