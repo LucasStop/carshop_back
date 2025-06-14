@@ -140,9 +140,8 @@ class CarsService
             ->where('status', $status)
             ->get();
     }
-    
-    /**
-     * Busca carros por faixa de preço baseado no preço base do modelo
+      /**
+     * Busca carros por faixa de preço
      * 
      * @param float $minPrice
      * @param float $maxPrice
@@ -151,11 +150,8 @@ class CarsService
     public function findByPriceRange(float $minPrice, float $maxPrice): Collection
     {
         try {
-            return $this->entity
-                ->join('models', 'cars.model_id', '=', 'models.id')
-                ->whereBetween('models.base_price', [$minPrice, $maxPrice])
-                ->select('cars.*')
-                ->with(['model', 'model.brand'])
+            return $this->entity->with(['model', 'model.brand'])
+                ->whereBetween('price', [$minPrice, $maxPrice])
                 ->get();
         } catch (Exception $e) {
             Log::error('Erro na busca por faixa de preço: ' . $e->getMessage());

@@ -17,13 +17,13 @@ class Cars extends Model
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
-     */
-    protected $fillable = [
+     */    protected $fillable = [
         'model_id',
         'vin',
         'color',
         'manufacture_year',
         'mileage',
+        'price',
         'status',
         'inclusion_date',
     ];
@@ -32,10 +32,10 @@ class Cars extends Model
      * The attributes that should be cast.
      *
      * @var array<string, string>
-     */
-    protected $casts = [
+     */    protected $casts = [
         'manufacture_year' => 'integer',
         'mileage' => 'integer',
+        'price' => 'decimal:2',
         'inclusion_date' => 'date',
     ];
 

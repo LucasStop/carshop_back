@@ -54,13 +54,13 @@ class CarsController extends Controller
     public function store(Request $request): JsonResponse
     {
         DB::beginTransaction();
-        try {
-            $validated = $request->validate([
+        try {            $validated = $request->validate([
                 'model_id' => 'required|exists:models,id',
                 'vin' => 'required|string|max:50|unique:cars,vin',
                 'color' => 'nullable|string|max:30',
                 'manufacture_year' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
                 'mileage' => 'nullable|integer|min:0',
+                'price' => 'required|numeric|min:0',
                 'status' => 'nullable|in:available,sold,reserved,maintenance',
                 'inclusion_date' => 'nullable|date',
             ]);
@@ -155,14 +155,13 @@ class CarsController extends Controller
                 return response()->json([
                     'message' => 'Não é possível atualizar um carro que já foi vendido'
                 ], Response::HTTP_CONFLICT);
-            }
-
-            $validated = $request->validate([
+            }            $validated = $request->validate([
                 'model_id' => 'sometimes|required|exists:models,id',
                 'vin' => 'sometimes|required|string|max:50|unique:cars,vin,'.$id,
                 'color' => 'nullable|string|max:30',
                 'manufacture_year' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
                 'mileage' => 'nullable|integer|min:0',
+                'price' => 'sometimes|required|numeric|min:0',
                 'status' => 'nullable|in:available,sold,reserved,maintenance',
                 'inclusion_date' => 'nullable|date',
             ]);

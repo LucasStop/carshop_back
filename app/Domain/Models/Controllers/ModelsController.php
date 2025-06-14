@@ -38,14 +38,12 @@ class ModelsController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        try {
-            $validated = $request->validate([
+        try {            $validated = $request->validate([
                 'brand_id' => 'required|exists:brands,id',
                 'name' => 'required|string|max:50',
                 'year_model' => 'nullable|integer|min:1900|max:' . (date('Y') + 5),
                 'engine' => 'nullable|string|max:50',
                 'power' => 'nullable|integer|min:0',
-                'base_price' => 'nullable|numeric|min:0',
                 'quantity' => 'nullable|integer|min:0',
             ]);
 
@@ -108,15 +106,12 @@ class ModelsController extends Controller
                 return response()->json([
                     'message' => 'Modelo não encontrado'
                 ], Response::HTTP_NOT_FOUND);
-            }
-
-            $validated = $request->validate([
+            }            $validated = $request->validate([
                 'brand_id' => 'sometimes|required|exists:brands,id',
                 'name' => 'sometimes|required|string|max:50',
                 'year_model' => 'nullable|integer|min:1900|max:' . (date('Y') + 5),
                 'engine' => 'nullable|string|max:50',
                 'power' => 'nullable|integer|min:0',
-                'base_price' => 'nullable|numeric|min:0',
                 'quantity' => 'nullable|integer|min:0',
             ]);
 
