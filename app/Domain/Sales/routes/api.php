@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::controller(SalesController::class)
     ->prefix('sales')
+    ->middleware('auth:api')
     ->group(function () {
         Route::get('/', 'index');
         Route::post('/', 'store');

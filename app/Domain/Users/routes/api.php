@@ -10,14 +10,14 @@ Route::controller(AuthController::class)
     ->group(function () {
         Route::post('/login', 'login');
         Route::post('/register', 'register');
-        Route::post('/refresh', 'refresh')->middleware('auth.api');
-        Route::get('/me', 'me')->middleware('auth.api');
+        Route::post('/refresh', 'refresh')->middleware('auth:api');
+        Route::get('/me', 'me')->middleware('auth:api');
     });
 
 // Rotas de usuários
 Route::controller(UsersController::class)
     ->prefix('users')
-    ->middleware('auth.api') 
+    ->middleware('auth:api')
     ->group(function () {
         Route::get('/', 'index');
         Route::post('/', 'store');

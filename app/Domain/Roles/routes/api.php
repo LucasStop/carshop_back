@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::controller(RolesController::class)
     ->prefix('roles')
+    ->middleware('auth:api')
     ->group(function () {
         Route::get('/', 'index');
         Route::post('/', 'store');
