@@ -19,23 +19,30 @@ class CarsController extends Controller
     public function __construct(
         private CarsService $service,
         private ModelsService $modelService
-    ) {}    public function index(Request $request): JsonResponse
+    ) {}
+
+    public function index(Request $request): JsonResponse
     {
         try {
             $params = $request->validate([
                 'page' => 'sometimes|integer|min:1',
                 'per_page' => 'sometimes|integer|min:1|max:100',
                 'search' => 'sometimes|string|max:255',
-                'status' => 'sometimes|string|in:available,sold,reserved,maintenance',
+                'status' => 'sometimes|string|max:50',
+                'model' => 'sometimes|string|max:255', // Aceita nome ou ID do modelo
                 'model_id' => 'sometimes|integer|exists:models,id',
+                'brand' => 'sometimes|string|max:255', // Aceita nome ou ID da marca
                 'brand_id' => 'sometimes|integer|exists:brands,id',
                 'manufacture_year' => 'sometimes|integer|min:1900|max:' . (date('Y') + 1),
                 'min_price' => 'sometimes|numeric|min:0',
-                'max_price' => 'sometimes|numeric|gt:min_price',
+                'max_price' => 'sometimes|numeric|min:0',
+                'price' => 'sometimes|numeric|min:0',
+                'color' => 'sometimes|string|max:50',
+                'order_by' => 'sometimes|string|in:id,vin,color,price,manufacture_year,status,created_at,updated_at',
+                'order_direction' => 'sometimes|string|in:asc,desc'
             ]);
 
             $cars = $this->service->all($params);
-            
             return response()->json($cars, Response::HTTP_OK);
         } catch (ValidationException $e) {
             return response()->json([
@@ -54,7 +61,8 @@ class CarsController extends Controller
     public function store(Request $request): JsonResponse
     {
         DB::beginTransaction();
-        try {            $validated = $request->validate([
+        try {
+            $validated = $request->validate([
                 'model_id' => 'required|exists:models,id',
                 'vin' => 'required|string|max:50|unique:cars,vin',
                 'color' => 'nullable|string|max:30',
@@ -73,23 +81,23 @@ class CarsController extends Controller
                     'message' => 'Modelo não encontrado'
                 ], Response::HTTP_NOT_FOUND);
             }
-            
+
             if ($model->quantity <= 0) {
                 DB::rollBack();
                 return response()->json([
                     'message' => 'Estoque insuficiente para este modelo'
                 ], Response::HTTP_BAD_REQUEST);
             }
-            
+
             // Criar o carro
             $car = $this->service->create($validated);
-            
+
             // Decrementar o estoque do modelo
             $this->modelService->decrementQuantity($validated['model_id']);
-            
+
             // Carrega os relacionamentos
             $car->load(['model', 'model.brand']);
-            
+
             DB::commit();
             return response()->json($car, Response::HTTP_CREATED);
         } catch (ValidationException $e) {
@@ -155,9 +163,10 @@ class CarsController extends Controller
                 return response()->json([
                     'message' => 'Não é possível atualizar um carro que já foi vendido'
                 ], Response::HTTP_CONFLICT);
-            }            $validated = $request->validate([
+            }
+            $validated = $request->validate([
                 'model_id' => 'sometimes|required|exists:models,id',
-                'vin' => 'sometimes|required|string|max:50|unique:cars,vin,'.$id,
+                'vin' => 'sometimes|required|string|max:50|unique:cars,vin,' . $id,
                 'color' => 'nullable|string|max:30',
                 'manufacture_year' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
                 'mileage' => 'nullable|integer|min:0',
@@ -170,7 +179,7 @@ class CarsController extends Controller
 
             $updatedCar = $this->service->find($id);
             $updatedCar->load(['model', 'model.brand']);
-            
+
             return response()->json($updatedCar, Response::HTTP_OK);
         } catch (ValidationException $e) {
             return response()->json([
@@ -223,10 +232,10 @@ class CarsController extends Controller
 
             // Armazenar o model_id para incrementar o estoque após a exclusão
             $modelId = $car->model_id;
-            
+
             // Excluir o carro
             $this->service->delete($id);
-            
+
             // Incrementar o estoque do modelo
             $this->modelService->incrementQuantity($modelId);
 
@@ -248,10 +257,10 @@ class CarsController extends Controller
     {
         try {
             $cars = $this->service->findByModel($modelId);
-            
+
             // Carrega os relacionamentos
             $cars->load(['model', 'model.brand']);
-            
+
             return response()->json($cars, Response::HTTP_OK);
         } catch (Exception $e) {
             Log::error('Erro ao buscar carros por modelo: ' . $e->getMessage());
@@ -271,12 +280,12 @@ class CarsController extends Controller
                     'message' => 'Status inválido'
                 ], Response::HTTP_BAD_REQUEST);
             }
-            
+
             $cars = $this->service->findByStatus($status);
-            
+
             // Carrega os relacionamentos
             $cars->load(['model', 'model.brand']);
-            
+
             return response()->json($cars, Response::HTTP_OK);
         } catch (Exception $e) {
             Log::error('Erro ao buscar carros por status: ' . $e->getMessage());
@@ -297,12 +306,12 @@ class CarsController extends Controller
                 'min_price' => 'required|numeric|min:0',
                 'max_price' => 'required|numeric|gt:min_price',
             ]);
-            
+
             $cars = $this->service->findByPriceRange(
                 $validated['min_price'],
                 $validated['max_price']
             );
-            
+
             return response()->json($cars, Response::HTTP_OK);
         } catch (ValidationException $e) {
             return response()->json([
