@@ -28,12 +28,17 @@ class UsersService
                     ->orWhere('email', 'LIKE', "%{$search}%")
                     ->orWhere('cpf', 'LIKE', "%{$search}%");
             });
-        }
-
-        // Aplicar filtro por role
+        }        // Aplicar filtro por role (aceita nome ou ID da role)
         if (!empty($params['role'])) {
-            $query->whereHas('role', function ($q) use ($params) {
-                $q->where('name', $params['role']);
+            $role = $params['role'];
+            $query->whereHas('role', function ($q) use ($role) {
+                // Se for numérico, busca por ID, senão busca por nome ou slug
+                if (is_numeric($role)) {
+                    $q->where('id', $role);
+                } else {
+                    $q->where('name', 'LIKE', "%{$role}%")
+                      ->orWhere('slug', 'LIKE', "%{$role}%");
+                }
             });
         }
 

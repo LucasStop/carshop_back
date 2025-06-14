@@ -20,12 +20,11 @@ class UsersController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        try {
-            $params = $request->validate([
+        try {            $params = $request->validate([
                 'page' => 'sometimes|integer|min:1',
                 'per_page' => 'sometimes|integer|min:1|max:100',
                 'search' => 'sometimes|string|max:255',
-                'role' => 'sometimes|string|max:255',
+                'role' => 'sometimes|string|max:255', // Aceita nome, slug ou ID da role
                 'status' => 'sometimes|string|in:active,inactive'
             ]);
 
