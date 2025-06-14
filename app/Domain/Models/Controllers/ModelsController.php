@@ -18,15 +18,33 @@ class ModelsController extends Controller
         private ModelsService $service
     ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $models = $this->service->all();
-            
-            // Carrega o relacionamento com a marca
-            $models->load('brand');
-            
+            $params = $request->validate([
+                'page' => 'sometimes|integer|min:1',
+                'per_page' => 'sometimes|integer|min:1|max:100',
+                'search' => 'sometimes|string|max:255',
+                'brand' => 'sometimes|string|max:255', // Aceita nome ou ID da marca
+                'brand_id' => 'sometimes|integer|exists:brands,id',
+                'year_model' => 'sometimes|integer|min:1900|max:' . (date('Y') + 5),
+                'engine' => 'sometimes|string|max:50',
+                'min_power' => 'sometimes|integer|min:0',
+                'max_power' => 'sometimes|integer|min:0',
+                'min_quantity' => 'sometimes|integer|min:0',
+                'max_quantity' => 'sometimes|integer|min:0',
+                'low_stock' => 'sometimes|integer|min:1',
+                'order_by' => 'sometimes|string|in:id,name,year_model,engine,power,quantity,created_at,updated_at',
+                'order_direction' => 'sometimes|string|in:asc,desc'
+            ]);
+
+            $models = $this->service->all($params);
             return response()->json($models, Response::HTTP_OK);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Erro de validação',
+                'errors' => $e->validator->errors()
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $e) {
             Log::error('Erro ao buscar modelos: ' . $e->getMessage());
             return response()->json([
@@ -38,7 +56,8 @@ class ModelsController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        try {            $validated = $request->validate([
+        try {
+            $validated = $request->validate([
                 'brand_id' => 'required|exists:brands,id',
                 'name' => 'required|string|max:50',
                 'year_model' => 'nullable|integer|min:1900|max:' . (date('Y') + 5),
@@ -48,10 +67,10 @@ class ModelsController extends Controller
             ]);
 
             $model = $this->service->create($validated);
-            
+
             // Carrega o relacionamento com a marca
             $model->load('brand');
-            
+
             return response()->json($model, Response::HTTP_CREATED);
         } catch (ValidationException $e) {
             return response()->json([
@@ -106,7 +125,8 @@ class ModelsController extends Controller
                 return response()->json([
                     'message' => 'Modelo não encontrado'
                 ], Response::HTTP_NOT_FOUND);
-            }            $validated = $request->validate([
+            }
+            $validated = $request->validate([
                 'brand_id' => 'sometimes|required|exists:brands,id',
                 'name' => 'sometimes|required|string|max:50',
                 'year_model' => 'nullable|integer|min:1900|max:' . (date('Y') + 5),
@@ -119,7 +139,7 @@ class ModelsController extends Controller
 
             $updatedModel = $this->service->find($id);
             $updatedModel->load('brand');
-            
+
             return response()->json($updatedModel, Response::HTTP_OK);
         } catch (ValidationException $e) {
             return response()->json([
@@ -177,10 +197,10 @@ class ModelsController extends Controller
     {
         try {
             $models = $this->service->findByBrand($brandId);
-            
+
             // Carrega o relacionamento com a marca
             $models->load('brand');
-            
+
             return response()->json($models, Response::HTTP_OK);
         } catch (Exception $e) {
             Log::error('Erro ao buscar modelos por marca: ' . $e->getMessage());
@@ -190,7 +210,7 @@ class ModelsController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * Atualiza a quantidade de um modelo
      */
@@ -200,20 +220,20 @@ class ModelsController extends Controller
             $validated = $request->validate([
                 'quantity' => 'required|integer|min:0',
             ]);
-            
+
             $model = $this->service->find($id);
-            
+
             if (!$model) {
                 return response()->json([
                     'message' => 'Modelo não encontrado'
                 ], Response::HTTP_NOT_FOUND);
             }
-            
+
             $this->service->updateQuantity($id, $validated['quantity']);
-            
+
             $updatedModel = $this->service->find($id);
             $updatedModel->load('brand');
-            
+
             return response()->json($updatedModel, Response::HTTP_OK);
         } catch (ValidationException $e) {
             return response()->json([
@@ -228,7 +248,7 @@ class ModelsController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * Incrementa a quantidade de um modelo
      */
@@ -238,21 +258,21 @@ class ModelsController extends Controller
             $validated = $request->validate([
                 'amount' => 'nullable|integer|min:1',
             ]);
-            
+
             $model = $this->service->find($id);
-            
+
             if (!$model) {
                 return response()->json([
                     'message' => 'Modelo não encontrado'
                 ], Response::HTTP_NOT_FOUND);
             }
-            
+
             $amount = $validated['amount'] ?? 1;
             $this->service->incrementQuantity($id, $amount);
-            
+
             $updatedModel = $this->service->find($id);
             $updatedModel->load('brand');
-            
+
             return response()->json($updatedModel, Response::HTTP_OK);
         } catch (ValidationException $e) {
             return response()->json([
@@ -267,7 +287,7 @@ class ModelsController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * Decrementa a quantidade de um modelo
      */
@@ -277,29 +297,29 @@ class ModelsController extends Controller
             $validated = $request->validate([
                 'amount' => 'nullable|integer|min:1',
             ]);
-            
+
             $model = $this->service->find($id);
-            
+
             if (!$model) {
                 return response()->json([
                     'message' => 'Modelo não encontrado'
                 ], Response::HTTP_NOT_FOUND);
             }
-            
+
             $amount = $validated['amount'] ?? 1;
-            
+
             // Verificar se há estoque suficiente
             if ($model->quantity < $amount) {
                 return response()->json([
                     'message' => 'Estoque insuficiente para este modelo'
                 ], Response::HTTP_BAD_REQUEST);
             }
-            
+
             $this->service->decrementQuantity($id, $amount);
-            
+
             $updatedModel = $this->service->find($id);
             $updatedModel->load('brand');
-            
+
             return response()->json($updatedModel, Response::HTTP_OK);
         } catch (ValidationException $e) {
             return response()->json([
@@ -314,7 +334,7 @@ class ModelsController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * Busca modelos com estoque baixo
      */
@@ -322,14 +342,14 @@ class ModelsController extends Controller
     {
         try {
             $minQuantity = $request->get('min_quantity', 5);
-            
+
             if (!is_numeric($minQuantity) || $minQuantity < 0) {
                 $minQuantity = 5;
             }
-            
+
             $models = $this->service->findLowStock((int)$minQuantity);
             $models->load('brand');
-            
+
             return response()->json($models, Response::HTTP_OK);
         } catch (Exception $e) {
             Log::error('Erro ao buscar modelos com estoque baixo: ' . $e->getMessage());
