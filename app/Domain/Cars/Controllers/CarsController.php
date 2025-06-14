@@ -19,17 +19,29 @@ class CarsController extends Controller
     public function __construct(
         private CarsService $service,
         private ModelsService $modelService
-    ) {}
-
-    public function index(): JsonResponse
+    ) {}    public function index(Request $request): JsonResponse
     {
         try {
-            $cars = $this->service->all();
-            
-            // Carrega os relacionamentos
-            $cars->load(['model', 'model.brand']);
+            $params = $request->validate([
+                'page' => 'sometimes|integer|min:1',
+                'per_page' => 'sometimes|integer|min:1|max:100',
+                'search' => 'sometimes|string|max:255',
+                'status' => 'sometimes|string|in:available,sold,reserved,maintenance',
+                'model_id' => 'sometimes|integer|exists:models,id',
+                'brand_id' => 'sometimes|integer|exists:brands,id',
+                'manufacture_year' => 'sometimes|integer|min:1900|max:' . (date('Y') + 1),
+                'min_price' => 'sometimes|numeric|min:0',
+                'max_price' => 'sometimes|numeric|gt:min_price',
+            ]);
+
+            $cars = $this->service->all($params);
             
             return response()->json($cars, Response::HTTP_OK);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Erro de validação',
+                'errors' => $e->validator->errors()
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (Exception $e) {
             Log::error('Erro ao buscar carros: ' . $e->getMessage());
             return response()->json([
