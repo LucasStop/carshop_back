@@ -46,7 +46,7 @@ class SalesController extends Controller
             $validated = $request->validate([
                 'car_id' => 'required|exists:cars,id',
                 'customer_user_id' => 'required|exists:users,id',
-                'employee_user_id' => 'required|exists:users,id',
+                'employee_user_id' => 'nullable|exists:users,id',
                 'sale_date' => 'required|date',
                 'final_price' => 'required|numeric|min:0',
                 'notes' => 'nullable|string',
@@ -132,7 +132,7 @@ class SalesController extends Controller
             $validated = $request->validate([
                 'car_id' => 'sometimes|required|exists:cars,id',
                 'customer_user_id' => 'sometimes|required|exists:users,id',
-                'employee_user_id' => 'sometimes|required|exists:users,id',
+                'employee_user_id' => 'nullable|exists:users,id',
                 'sale_date' => 'sometimes|required|date',
                 'final_price' => 'sometimes|required|numeric|min:0',
                 'notes' => 'nullable|string',
