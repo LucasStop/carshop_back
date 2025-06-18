@@ -45,3 +45,8 @@ if (file_exists(app_path('Domain/Cars/routes/api.php'))) {
 if (file_exists(app_path('Domain/Sales/routes/api.php'))) {
     require app_path('Domain/Sales/routes/api.php');
 }
+
+// Carregar rotas de uploads
+if (file_exists(app_path('Domain/Uploads/routes/api.php'))) {
+    require app_path('Domain/Uploads/routes/api.php');
+}

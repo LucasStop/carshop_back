@@ -41,7 +41,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -60,6 +60,16 @@ return [
             'report' => false,
         ],
 
+        'carshop' => [
+            'driver' => 's3',
+            'key' => env('WAS_ACCESS_KEY_ID'),
+            'secret' => env('WAS_SECRET_ACCESS_KEY'),
+            'region' => env('WAS_DEFAULT_REGION'),
+            'bucket' => env('WAS_BUCKET'),
+            'url' => env('WAS_URL'),
+            'endpoint' => env('WAS_ENDPOINT'),
+            'prefix' => env('WAS_CAMINHO'), // <-- ADICIONE ESTA LINHA AQUI
+        ],
     ],
 
     /*
